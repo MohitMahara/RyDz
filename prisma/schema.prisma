@@ -6,3 +6,142 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum Role {
+  RIDER
+  DRIVER
+  ADMIN
+}
+
+enum RideStatus {
+  SEARCHING
+  ACCEPTED
+  ARRIVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum VehicleType {
+  BIKE
+  AUTO
+  CAB_ECONOMY
+  CAB_PREMIUM
+}
+
+
+model User {
+  id              String         @id @default(uuid(7))
+  phoneNumber     String         @unique
+  email           String?        @unique
+  password        String
+  name            String
+  role            Role           @default(RIDER)
+  avatarUrl       String?
+  isPhoneVerified Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  driverProfile   DriverProfile?
+  ridesAsRider    Ride[]         @relation("RiderRides")
+  ridesAsDriver   Ride[]         @relation("DriverRides")
+  payments        Payment[]
+}
+
+model DriverProfile {
+  id              String       @id @default(uuid(7))
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  licenseNumber   String       @unique
+  isVerified      Boolean      @default(false) 
+  isAvailable     Boolean      @default(false) 
+
+  rating          Float        @default(5.0)
+  totalRides      Int          @default(0)
+  totalRevenue    Float        @default(0.0)
+
+  // Relations
+  vehicle         Vehicle?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Vehicle {
+  id              String        @id @default(uuid(7))
+  driverProfileId String        @unique
+  driverProfile   DriverProfile @relation(fields: [driverProfileId], references: [id], onDelete: Cascade)
+
+  vehicleType     VehicleType
+  make            String       
+  model           String      
+  plateNumber     String        @unique
+  color           String
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Ride {
+  id                 String       @id @default(uuid(7))
+
+  riderId            String
+  rider              User         @relation("RiderRides", fields: [riderId], references: [id])
+  driverId           String?     
+  driver             User?        @relation("DriverRides", fields: [driverId], references: [id])
+
+  pickupLat          Float
+  pickupLng          Float
+  pickupAddress      String
+  dropoffLat         Float
+  dropoffLng         Float
+  dropoffAddress     String
+  status             RideStatus   @default(SEARCHING)
+  otp                String       
+
+  estimatedFare      Float
+  finalFare          Float?    
+  distanceInKm       Float
+  durationInMinutes  Float?
+
+  cancelledBy        Role?
+  cancellationReason String?
+
+  requestedAt        DateTime     @default(now())
+  acceptedAt         DateTime?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+
+  // Relations
+  payment            Payment?
+}
+
+model Payment {
+  id              String        @id @default(uuid(7))
+  rideId          String        @unique
+  ride            Ride          @relation(fields: [rideId], references: [id])
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+
+  amount          Float
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  transactionId   String?     
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
