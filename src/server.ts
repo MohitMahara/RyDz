@@ -1,7 +1,7 @@
 import http from 'http';
 import app from './app.js';
 import env from './config/env.js';
-import prisma from './config/prisma.js';
+import prisma from './config/db.js';
 import { redis } from './config/redis.js';
 import { initializeSocket } from './config/socket.js';
 

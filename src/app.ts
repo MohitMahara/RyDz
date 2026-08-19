@@ -1,6 +1,8 @@
 import express from "express";  
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response} from 'express';
 import cors from 'cors';
+import globalErrorHandler from './middlewares/error.middleware.js';
+
 
 const app = express();
 
@@ -19,5 +21,13 @@ app.get('/health', (req: Request, res: Response) => {
     });
 });
 
+app.all('*', (req: Request, res: Response) => {
+    res.status(404).json({
+        status: 'fail',
+        message: `Can't find ${req.originalUrl} on this server`
+    });
+});
+
+app.use(globalErrorHandler);
 
 export default app;
