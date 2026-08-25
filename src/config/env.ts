@@ -7,6 +7,9 @@ const envSchema = z.object({
   PORT: z.string().transform(Number),
   DATABASE_URL: z.url(),
   REDIS_URL: z.url(),
+  RECAPTCHA_SECRET: z.string(),
+  JWT_SECRET: z.string(),
+  JWT_REFRESH_SECRET: z.string(),
   NODE_ENV: z.enum(["development", "production"]).default("development"),
 });
 
