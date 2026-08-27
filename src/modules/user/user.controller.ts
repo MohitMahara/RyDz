@@ -3,6 +3,16 @@ import {catchAsync}  from '../../shared/utils/catchAsync.util.js';
 import { userService } from './user.service.js';
 import { completeProfileSchema} from './user.schema.js';
 
+export const getUserProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.userId as string;
+    const { user } = await userService.getUserProfile(userId);
+
+    res.status(200).json({
+        status: 'success',
+        message : "User profile is fetched successfully",
+        data: { user}
+    });
+});
 
 // Controller for completing the user profile after phone number verification
 export const completeProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {

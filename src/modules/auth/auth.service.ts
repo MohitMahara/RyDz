@@ -30,25 +30,30 @@ class AuthService {
         }
 
         const existingUser = await prisma.user.findUnique({
-            where: { phoneNumber }
+            where: { phoneNumber },
+            include : {
+                driverProfile : true
+            }
         });
 
         const user = existingUser ?? await prisma.user.create({
             data: {
                 phoneNumber,
                 isPhoneVerified: true
-            }
+            },
+            include: { driverProfile: true }
+
         });
 
         if (!user.isPhoneVerified) {
             await prisma.user.update({
                 where: { id: user.id },
-                data: { isPhoneVerified: true }
+                data: { isPhoneVerified: true },
             });
             user.isPhoneVerified = true;
         }
 
-        const token = generateToken(user.id, user.role);
+        const token = generateToken(user);
         const refreshToken = generateRefreshToken(user.id);
 
         return {

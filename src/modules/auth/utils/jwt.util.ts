@@ -1,28 +1,33 @@
 import jwt from 'jsonwebtoken';
 import env from '../../../config/env.js';
+import type { User, DriverProfile } from '../../../generated/client/client.js';
+
+type JwtPayload = {
+    id: string,
+    role: "USER" | "ADMIN",    
+    driver: {
+      profileId: string,
+      kycStatus: "NOT_STARTED" | "IN_PROGRESS" | "APPROVED" | "REJECTED",
+    } | null
+}
 
 
-/**
- * Generates a JWT token for the given user ID and role.
- * @param userId User's unique ID
- * @param role Role of the user, e.g. USER or ADMIN
- * @returns A jwt token
- */
+type UserWithDriver = User & {
+    driverProfile: DriverProfile | null;
+};
 
-export const generateToken = (userId: string, role: string): string => {
+export const generateToken = (user : UserWithDriver): string => {
 
-    const payload = {
-        id: userId,
-        role: role
+    const payload: JwtPayload = {
+        id: user.id,
+        role: user.role,
+        driver: user.driverProfile ? {
+            profileId: user.driverProfile.id,
+            kycStatus: user.driverProfile.kycStatus
+        } : null
     };
 
-    const token = jwt.sign(
-        payload, 
-        env.JWT_SECRET, 
-        {
-            expiresIn: '15m',
-        }
-    );
+    const token = jwt.sign(payload, env.JWT_SECRET, {expiresIn: '15m',});
 
     return token;
 };

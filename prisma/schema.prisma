@@ -33,11 +33,24 @@ enum PaymentStatus {
   FAILED
 }
 
+enum KycStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+}
+
 enum VehicleType {
   BIKE
   AUTO
   CAB_ECONOMY
   CAB_PREMIUM
+}
+
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
 }
 
 
@@ -66,29 +79,38 @@ model DriverProfile {
   user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   licenseNumber   String       @unique
-  isVerified      Boolean      @default(false) 
+  licenseExpiryDate DateTime?
+  licenseVerified Boolean      @default(false)
   isAvailable     Boolean      @default(false) 
+  kycStatus       KycStatus    @default(NOT_STARTED)
+  activeVehicleId String?      @unique
+  activeVehicle   Vehicle?     @relation("ActiveDriverVehicle", fields: [activeVehicleId], references: [id], onDelete: SetNull)
 
   rating          Float        @default(5.0)
   totalRides      Int          @default(0)
   totalRevenue    Float        @default(0.0)
-
+  deletedAt       DateTime?
+  
   // Relations
-  vehicle         Vehicle?
+  vehicles        Vehicle[]    @relation("DriverVehicles")
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 }
 
 model Vehicle {
   id              String        @id @default(uuid(7))
-  driverProfileId String        @unique
-  driverProfile   DriverProfile @relation(fields: [driverProfileId], references: [id], onDelete: Cascade)
+  driverProfileId String
+  driverProfile   DriverProfile @relation("DriverVehicles", fields: [driverProfileId], references: [id], onDelete: Cascade)
+  activeForProfile DriverProfile? @relation("ActiveDriverVehicle")
 
   vehicleType     VehicleType
   make            String       
   model           String      
   plateNumber     String        @unique
   color           String
+  status          VehicleStatus @default(ACTIVE)
+  isVerified      Boolean       @default(false)
+  deletedAt       DateTime?
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
