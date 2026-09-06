@@ -3,7 +3,7 @@ import type { Server as HTTPServer } from 'http';
 import { redis } from './redis.js';
 
 export interface ClientToServerEvents {
-    'driver:update-location': (data: { driverId: string, lat: number, lng: number }) => void;
+    'driver:update-location': (data: { driverId: string, vechileType : string, lat: number, lng: number }) => void;
     'driver:go-online': (driverId: string) => void;
     'driver:go-offline': (driverId: string) => void;
 }
@@ -42,11 +42,13 @@ export const initializeSocket = (httpServer: HTTPServer) => {
 
         socket.on('driver:update-location', async (data) => {
             try {
+                const memberString = `${data.driverId}:${data.vechileType}`;
+
                 await redis.geoadd(
                     'drivers:locations', 
                     data.lng, 
                     data.lat, 
-                    data.driverId
+                    memberString
                 );
                 
                 console.log(`Driver ${data.driverId} moved to ${data.lat}, ${data.lng}`);

@@ -5,6 +5,7 @@ import globalErrorHandler from './middlewares/error.middleware.js';
 import authRoutes from "./modules/auth/auth.routes.js";
 import userRoutes from "./modules/user/user.routes.js";
 import driverRoutes from "./modules/driver/driver.routes.js";
+import rideRoutes from "./modules/ride/ride.routes.js";
 import rateLimit from 'express-rate-limit';
 
 const apiLimiter = rateLimit({
@@ -32,8 +33,9 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/user', userRoutes); 
-app.use('/api/v1/driver', driverRoutes);
+app.use('/api/v1/users', userRoutes); 
+app.use('/api/v1/drivers', driverRoutes);
+app.use('/api/v1/rides', rideRoutes);
 
 app.use((req, res, next) => {
     res.status(404).json({ message: `Route ${req.originalUrl} not found` });
