@@ -99,10 +99,12 @@ model DriverProfile {
 
 model Vehicle {
   id              String        @id @default(uuid(7))
+ 
   driverProfileId String
   driverProfile   DriverProfile @relation("DriverVehicles", fields: [driverProfileId], references: [id], onDelete: Cascade)
   activeForProfile DriverProfile? @relation("ActiveDriverVehicle")
 
+  rides           Ride[]
   vehicleType     VehicleType
   make            String       
   model           String      
@@ -121,8 +123,14 @@ model Ride {
 
   riderId            String
   rider              User         @relation("RiderRides", fields: [riderId], references: [id])
+  
   driverId           String?     
   driver             User?        @relation("DriverRides", fields: [driverId], references: [id])
+
+  vehicleId          String?      
+  vehicle            Vehicle?     @relation(fields: [vehicleId], references: [id])
+
+  requestedVehicleType     VehicleType
 
   pickupLat          Float
   pickupLng          Float

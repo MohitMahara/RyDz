@@ -1,6 +1,7 @@
 import { Server as SocketIOServer } from 'socket.io';
 import type { Server as HTTPServer } from 'http';
 import { redis } from './redis.js';
+import type { $ZodNumberDef } from 'zod/v4/core';
 
 export interface ClientToServerEvents {
     'driver:update-location': (data: { driverId: string, vechileType : string, lat: number, lng: number }) => void;
@@ -9,7 +10,25 @@ export interface ClientToServerEvents {
 }
 
 export interface ServerToClientEvents {
-    'ride:new-request': (data: { rideId: string, pickupLat: number, pickupLng: number }) => void;
+    'ride:new-request': (data: { 
+        rideId: string, 
+        pickup : {
+            lat: number,
+            lng: number,  
+            address : string 
+        },
+        dropoff : {
+          lat: number, 
+          lng: number,
+          address : string 
+        },
+        tripDetails : {
+         distanceInKm : number,
+         durationInMin : number,
+         fare : number
+        },
+        riderDistanceInKm : number
+    }) => void;
     'ride:status-changed': (data: { rideId: string, status: string }) => void;
     'error': (message: string) => void;
 }
