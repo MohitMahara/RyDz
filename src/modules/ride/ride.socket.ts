@@ -11,6 +11,10 @@ export interface ClientToServerEvents {
         data: { rideId: string; decision: 'ACCEPT' | 'REJECT' },
         callback: (result: { success: boolean; message: string }) => void
     ) => void;
+    'ride:arrive': (data: { rideId: string }, callback: (result: { success: boolean; message: string }) => void) => void;
+    'ride:start': (data: { rideId: string; otp: string }, callback: (result: { success: boolean; message: string }) => void) => void;
+    'ride:complete': (data: { rideId: string }, callback: (result: { success: boolean; message: string }) => void) => void;
+    'ride:join': (data: { rideId: string }, callback: (result: { success: boolean; message: string }) => void) => void;
 }
 
 export interface ServerToClientEvents {
@@ -45,6 +49,13 @@ const removeDriverLocation = async (socket: RideSocket) => {
 
     await redis.zrem(DRIVER_LOCATIONS_KEY, socket.data.driverLocationMember);
     delete socket.data.driverLocationMember;
+};
+
+const getErrorMessage = (error: unknown) =>
+    error instanceof Error ? error.message : 'Unable to update the ride.';
+
+const emitRideStatus = (rideId: string, status: 'ARRIVED' | 'IN_PROGRESS' | 'COMPLETED') => {
+    getIO().to(rideRoom(rideId)).emit('ride:status-changed', { rideId, status });
 };
 
 export const registerRideSocketHandlers = (socket: RideSocket) => {
@@ -113,8 +124,50 @@ export const registerRideSocketHandlers = (socket: RideSocket) => {
                 message: 'Ride accepted successfully.'
             });
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Unable to accept the ride.';
-            callback({ success: false, message });
+            callback({ success: false, message: getErrorMessage(error) });
+        }
+    });
+
+    socket.on('ride:arrive', async ({ rideId }, callback) => {
+        try {
+            await rideService.markDriverArrived(socket.data.userId, rideId);
+            socket.join(rideRoom(rideId));
+            emitRideStatus(rideId, 'ARRIVED');
+            callback({ success: true, message: 'Driver arrival recorded.' });
+        } catch (error) {
+            callback({ success: false, message: getErrorMessage(error) });
+        }
+    });
+
+    socket.on('ride:start', async ({ rideId, otp }, callback) => {
+        try {
+            await rideService.startRide(socket.data.userId, rideId, otp);
+            socket.join(rideRoom(rideId));
+            emitRideStatus(rideId, 'IN_PROGRESS');
+            callback({ success: true, message: 'Ride started successfully.' });
+        } catch (error) {
+            callback({ success: false, message: getErrorMessage(error) });
+        }
+    });
+
+    socket.on('ride:complete', async ({ rideId }, callback) => {
+        try {
+            await rideService.completeRide(socket.data.userId, rideId);
+            socket.join(rideRoom(rideId));
+            emitRideStatus(rideId, 'COMPLETED');
+            callback({ success: true, message: 'Ride completed successfully.' });
+        } catch (error) {
+            callback({ success: false, message: getErrorMessage(error) });
+        }
+    });
+
+    socket.on('ride:join', async ({ rideId }, callback) => {
+        try {
+            await rideService.validateRideParticipant(socket.data.userId, rideId);
+            socket.join(rideRoom(rideId));
+            callback({ success: true, message: 'Joined ride updates.' });
+        } catch (error) {
+            callback({ success: false, message: getErrorMessage(error) });
         }
     });
 

@@ -244,6 +244,75 @@ class RideService{
     });
   }
 
+  private async updateDriverRideStatus(
+    tx: Prisma.TransactionClient,
+    rideId: string,
+    driverId: string,
+    currentStatus: 'ACCEPTED' | 'ARRIVED' | 'IN_PROGRESS',
+    nextStatus: 'ARRIVED' | 'IN_PROGRESS' | 'COMPLETED',
+    data: Prisma.RideUpdateManyMutationInput
+  ) {
+    const result = await tx.ride.updateMany({
+      where: { id: rideId, driverId, status: currentStatus },
+      data: { ...data, status: nextStatus }
+    });
+
+    if (result.count === 0) {
+      throw new AppError(`Ride cannot move from ${currentStatus} to ${nextStatus}.`, 409);
+    }
+  }
+
+  async markDriverArrived(driverId: string, rideId: string) {
+    await prisma.$transaction((tx) =>
+      this.updateDriverRideStatus(tx, rideId, driverId, 'ACCEPTED', 'ARRIVED', { arrivedAt: new Date() })
+    );
+  }
+
+  async startRide(driverId: string, rideId: string, otp: string) {
+    await prisma.$transaction(async (tx) => {
+      const result = await tx.ride.updateMany({
+        where: { id: rideId, driverId, status: 'ARRIVED', otp },
+        data: { status: 'IN_PROGRESS', startedAt: new Date() }
+      });
+
+      if (result.count === 0) {
+        throw new AppError('Invalid OTP or ride is not ready to start.', 409);
+      }
+    });
+  }
+
+  async completeRide(driverId: string, rideId: string) {
+    await prisma.$transaction(async (tx) => {
+      const ride = await tx.ride.findFirst({
+        where: { id: rideId, driverId, status: 'IN_PROGRESS' },
+        select: { estimatedFare: true }
+      });
+
+      if (!ride) {
+        throw new AppError('Ride cannot be completed before it has started.', 409);
+      }
+
+      await this.updateDriverRideStatus(tx, rideId, driverId, 'IN_PROGRESS', 'COMPLETED', {
+        completedAt: new Date(),
+        finalFare: ride.estimatedFare
+      });
+    });
+  }
+
+  async validateRideParticipant(userId: string, rideId: string) {
+    const ride = await prisma.ride.findFirst({
+      where: {
+        id: rideId,
+        OR: [{ riderId: userId }, { driverId: userId }]
+      },
+      select: { id: true }
+    });
+
+    if (!ride) {
+      throw new AppError('You are not a participant in this ride.', 403);
+    }
+  }
+
 }
 
 export const rideService =  new RideService();

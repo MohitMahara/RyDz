@@ -151,6 +151,7 @@ model Ride {
 
   requestedAt        DateTime     @default(now())
   acceptedAt         DateTime?
+  arrivedAt          DateTime?
   startedAt          DateTime?
   completedAt        DateTime?
   cancelledAt        DateTime?
