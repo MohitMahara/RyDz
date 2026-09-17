@@ -4,6 +4,9 @@ import {redis} from "../../config/redis.js";
 import prisma from "../../config/db.js";
 import { otpService } from "../../shared/services/otp.service.js";
 import { getIO } from "../../config/socket.js";
+import { AppError } from "../../shared/utils/AppError.util.js";
+import type { Prisma } from "../../generated/client/client.js";
+import type { VehicleType } from "../../generated/client/enums.js";
 
 class RideService{
 
@@ -149,6 +152,96 @@ class RideService{
        broadcastedTo : broadcastCount
     }
 
+  }
+
+  private async getEligibleDriverVehicle(tx: Prisma.TransactionClient, driverId: string) {
+    const driverProfile = await tx.driverProfile.findUnique({
+      where: { userId: driverId },
+      include: { activeVehicle: true }
+    });
+
+    if (!driverProfile || driverProfile.deletedAt) {
+      throw new AppError('Driver profile not found.', 404);
+    }
+
+    if (!driverProfile.isAvailable || driverProfile.kycStatus !== 'APPROVED' || !driverProfile.licenseVerified) {
+      throw new AppError('Driver is not eligible to accept rides.', 403);
+    }
+
+    const vehicle = driverProfile.activeVehicle;
+    if (!vehicle || vehicle.status !== 'ACTIVE' || vehicle.deletedAt || !vehicle.isVerified) {
+      throw new AppError('An active verified vehicle is required to accept rides.', 403);
+    }
+
+    return vehicle;
+  }
+
+  private async assignSearchingRide(
+    tx: Prisma.TransactionClient,
+    rideId: string,
+    driverId: string,
+    vehicle: { id: string; vehicleType: VehicleType }
+  ) {
+    const result = await tx.ride.updateMany({
+      where: {
+        id: rideId,
+        status: 'SEARCHING',
+        requestedVehicleType: vehicle.vehicleType
+      },
+      data: {
+        driverId,
+        vehicleId: vehicle.id,
+        status: 'ACCEPTED',
+        acceptedAt: new Date()
+      }
+    });
+
+    if (result.count === 0) {
+      throw new AppError('This ride is no longer available.', 409);
+    }
+  }
+
+  private async getAcceptedRideDetails(tx: Prisma.TransactionClient, rideId: string) {
+    const ride = await tx.ride.findUniqueOrThrow({
+      where: { id: rideId },
+      include: {
+        driver: { select: { id: true, name: true, phoneNumber: true, avatarUrl: true, driverProfile: { select: { rating: true } } } },
+        vehicle: { select: { id: true, vehicleType: true, make: true, model: true, color: true, plateNumber: true } }
+      }
+    });
+
+    if (!ride.driver || !ride.driver.driverProfile || !ride.vehicle) {
+      throw new AppError('Accepted ride details could not be loaded.', 500);
+    }
+
+    return {
+      rideId: ride.id,
+      riderId: ride.riderId,
+      otp: ride.otp,
+      driver: {
+        id: ride.driver.id,
+        name: ride.driver.name,
+        phoneNumber: ride.driver.phoneNumber,
+        avatarUrl: ride.driver.avatarUrl,
+        rating: ride.driver.driverProfile.rating
+      },
+      vehicle: {
+        id: ride.vehicle.id,
+        type: ride.vehicle.vehicleType,
+        make: ride.vehicle.make,
+        model: ride.vehicle.model,
+        color: ride.vehicle.color,
+        plateNumber: ride.vehicle.plateNumber
+      }
+    };
+  }
+
+  async acceptRide(driverId: string, rideId: string) {
+    return prisma.$transaction(async (tx) => {
+      const vehicle = await this.getEligibleDriverVehicle(tx, driverId);
+      await this.assignSearchingRide(tx, rideId, driverId, vehicle);
+      return this.getAcceptedRideDetails(tx, rideId);
+    });
   }
 
 }
