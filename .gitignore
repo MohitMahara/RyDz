@@ -1,16 +1,23 @@
 
 #Dependencies
-node_modules
+client/node_modules
+server/node_modules
+
 
 #Envrionment variables
-.env
+server/.env
+client/.env
+
 
 # Typescript compile outputs
-dist/
-build/
+client/dist/
+client/build/
+
+server/dist/
+server/build/
 
 # Prisma
-src/generated/
+server/src/generated/
 
 # Logs
 logs
@@ -32,4 +39,4 @@ Thumbs.db
 docs/sprints/
 
 #Testing Files
-seedDrivers.js
+server/seedDrivers.js
