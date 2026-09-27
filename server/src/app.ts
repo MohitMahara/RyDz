@@ -17,8 +17,13 @@ const apiLimiter = rateLimit({
 const app = express();
 
 app.use(apiLimiter);
-app.use(cors());
 app.use(express.json());
+
+app.use(cors({
+  origin: 'http://localhost:5173', 
+  credentials: true             
+}));
+
 
 app.get('/', (req: Request, res: Response) => {
     res.status(200).json({ message: 'Welcome to the RyDz Backend' });
