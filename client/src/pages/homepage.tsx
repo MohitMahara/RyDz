@@ -40,59 +40,45 @@ export default function HomePage() {
               </Link>
             </Button>
           </div>
-
-          {/* Social Proof */}
-          <div className="pt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1 text-amber-500">
-              <Star className="size-4 fill-amber-500" />
-              <Star className="size-4 fill-amber-500" />
-              <Star className="size-4 fill-amber-500" />
-              <Star className="size-4 fill-amber-500" />
-              <Star className="size-4 fill-amber-500" />
-              <span className="font-semibold text-foreground ml-1">4.9/5</span>
-            </div>
-            <span className="hidden sm:inline">•</span>
-            <span className="hidden sm:inline">10,000+ Rides Completed</span>
-          </div>
         </div>
       </section>
 
       {/* FEATURES SECTION */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-12">
         <div className="text-center space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Why Choose RyDz?</h2>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Why Choose RyDz?</h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
             Built for modern commuters and drivers with fairness, safety, and efficiency at the core.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="rounded-3xl border border-border bg-card p-8 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex flex-col items-center rounded-3xl border border-border bg-card p-8 space-y-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <Clock className="size-6" />
             </div>
             <h3 className="text-xl font-bold">Instant Booking</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <p className="text-muted-foreground text-center text-sm leading-relaxed">
               Set your pickup and dropoff points to view instant fares across Bikes, Autos, Economy & Premium cabs.
             </p>
           </div>
 
-          <div className="rounded-3xl border border-border bg-card p-8 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex flex-col items-center rounded-3xl border border-border bg-card p-8 space-y-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <MapPin className="size-6" />
             </div>
             <h3 className="text-xl font-bold">Live GPS Tracking</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <p className="text-muted-foreground text-center text-sm leading-relaxed">
               Track your driver in real-time with WebSockets live feed from request confirmation to destination.
             </p>
           </div>
 
-          <div className="rounded-3xl border border-border bg-card p-8 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex flex-col items-center rounded-3xl border border-border bg-card p-8 space-y-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="size-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <ShieldCheck className="size-6" />
             </div>
             <h3 className="text-xl font-bold">Verified Drivers</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <p className="text-muted-foreground text-center text-sm leading-relaxed">
               All driver accounts undergo license verification and KYC check to ensure maximum safety.
             </p>
           </div>
