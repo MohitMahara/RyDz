@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { SubmitEvent } from "react"
 import { useNavigate } from "react-router-dom"
-import { Mail, Phone, User as UserIcon, Lock } from "lucide-react"
+import {Lock} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { getApiErrorMessage } from "@/services/api"
@@ -22,9 +22,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const normalizedPhone = phone.trim().startsWith("+")
-    ? phone.trim()
-    : `+91${phone.replace(/\D/g, "")}`
+  const normalizedPhone = phone.trim().startsWith("+") ? phone.trim() : `+91${phone.replace(/\D/g, "")}`
 
   const resetMode = (nextMode: "login" | "signup") => {
     setMode(nextMode)
@@ -71,7 +69,7 @@ export default function AuthPage() {
 
       localStorage.setItem("rydz-auth", JSON.stringify(finalAuth))
       navigate("/rides");
-      
+
     } catch (error) {
       setError(getApiErrorMessage(error))
     } finally {
@@ -121,7 +119,6 @@ export default function AuthPage() {
             <>
               <Field
                 label="Full Name"
-                icon={<UserIcon />}
                 value={name}
                 onChange={setName}
                 placeholder="Aarav Sharma"
@@ -129,7 +126,6 @@ export default function AuthPage() {
 
               <Field
                 label="Email"
-                icon={<Mail />}
                 value={email}
                 onChange={setEmail}
                 placeholder="aarav@example.com"
@@ -141,7 +137,6 @@ export default function AuthPage() {
           {step === "phone" ? (
             <div className="flex flex-col gap-1.5">
               <label className="flex items-center gap-1.5 text-sm font-medium">
-                <Phone className="size-3.5 text-muted-foreground" />
                 Phone Number
               </label>
 
@@ -220,14 +215,12 @@ export default function AuthPage() {
 
 function Field({
   label,
-  icon,
   value,
   onChange,
   placeholder,
   type = "text",
 }: {
   label: string
-  icon: React.ReactNode
   value: string
   onChange: (value: string) => void
   placeholder: string
@@ -236,7 +229,6 @@ function Field({
   return (
     <div className="flex flex-col gap-1.5">
       <label className="flex items-center gap-1.5 text-sm font-medium">
-        <span className="size-3.5 text-muted-foreground">{icon}</span>
         {label}
       </label>
 

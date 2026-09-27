@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Navigation, Car, ShieldCheck, Zap, MapPin, Clock, ArrowRight, Star } from "lucide-react"
+import { Navigation, Car, ShieldCheck, Zap, MapPin, Clock, ArrowRight} from "lucide-react"
 
 export default function HomePage() {
   return (
