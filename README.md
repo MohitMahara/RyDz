@@ -122,11 +122,3 @@ The OSRM service must be running and accessible to the RyDz backend.
 ## License
 
 MIT License
-
-## Author
-
-**Mohit Mahara**
-
-[GitHub](https://github.com/MohitMahara)
-
-[Repository](https://github.com/MohitMahara/RyDz)
