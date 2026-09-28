@@ -366,6 +366,30 @@ class DriverService {
             throw new AppError("Driver profile not found", 404);
         }
 
+        const activeDriverRide = await prisma.ride.findFirst({
+            where: {
+                driverId: userId,
+                status: { in: ["ACCEPTED", "ARRIVED", "IN_PROGRESS"] }
+            },
+            select: { id: true }
+        });
+
+        if (activeDriverRide) {
+            throw new AppError("Availability cannot be changed during an active driver ride", 409);
+        }
+
+        const activeRiderRide = await prisma.ride.findFirst({
+            where: {
+             riderId: userId,
+             status: { in: ["SEARCHING", "ACCEPTED", "ARRIVED", "IN_PROGRESS"] }
+            },
+            select: { id: true }
+        });
+
+        if (activeRiderRide) {
+          throw new AppError("Finish or cancel your rider ride before going online", 409);
+        }
+
         if (availabilityData.isAvailable) {
             this.driverCanGoOnline(driverProfile);
         }
@@ -403,6 +427,38 @@ class DriverService {
        const status = driverProfile.kycStatus;
 
        return {status};
+    }
+
+    public async getRides(userId: string) {
+        const rides = await prisma.ride.findMany({
+            where: { driverId: userId },
+            orderBy: { requestedAt: "desc" },
+            select: {
+                id: true,
+                pickupAddress: true,
+                dropoffAddress: true,
+                distanceInKm: true,
+                estimatedFare: true,
+                finalFare: true,
+                status: true,
+                requestedAt: true,
+                rider: { select: { name: true } },
+                vehicle: { select: { vehicleType: true } }
+            }
+        });
+
+        const activeRide = rides.find((ride) => ["ACCEPTED", "ARRIVED", "IN_PROGRESS"].includes(ride.status)) ?? null;
+        const history = rides.filter((ride) => ["COMPLETED", "CANCELLED"].includes(ride.status));
+        const completedRides = history.filter((ride) => ride.status === "COMPLETED");
+
+        return {
+            activeRide,
+            history,
+            stats: {
+                completedRideCount: completedRides.length,
+                earnings: completedRides.reduce((total, ride) => total + (ride.finalFare ?? ride.estimatedFare), 0)
+            }
+        };
     }
 
 }

@@ -1,7 +1,9 @@
 import axios from "axios"
 
+const baseURL = import.meta.env.VITE_BACKEND_URL ?? "http://localhost:5000";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:5000/api/v1",
+  baseURL: `${baseURL}/api/v1`,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -10,10 +12,13 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("rydz_token")
+  const data = localStorage.getItem("rydz-auth")
+  const token = data ? JSON.parse(data)?.token : null
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
   return config
 })
 
@@ -21,13 +26,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("rydz_token")
+      localStorage.removeItem("rydz-auth")
     }
+
     return Promise.reject(error)
   }
 )
-
-export default api
 
 export const getApiErrorMessage = (error: unknown) => {
   if (axios.isAxiosError(error)) {
@@ -41,3 +45,5 @@ export const getApiErrorMessage = (error: unknown) => {
 
   return error instanceof Error ? error.message : "Something went wrong"
 }
+
+export default api

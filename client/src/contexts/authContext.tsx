@@ -1,6 +1,5 @@
 import { useState, createContext, useContext, useEffect } from "react"
 import type { ReactNode } from "react"
-import axios from "axios"
 import type { User } from "@/types"
 
 export interface UserInfo {
@@ -34,13 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-    if (userInfo.token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${userInfo.token}`
-    } else {
-      delete axios.defaults.headers.common["Authorization"]
-    }
-  }, [userInfo.token])
 
   return (
     <AuthContext.Provider value={{ userInfo, loading, setUserInfo }}>

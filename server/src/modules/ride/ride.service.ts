@@ -82,6 +82,24 @@ class RideService{
       throw new Error("Rider ID is required to book a ride.");
     }
 
+    const [driverProfile, activeDriverRide] = await Promise.all([
+      prisma.driverProfile.findUnique({
+        where: { userId: riderId },
+        select: { isAvailable: true }
+      }),
+      prisma.ride.findFirst({
+        where: {
+          driverId: riderId,
+          status: { in: ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'] }
+        },
+        select: { id: true }
+      })
+    ]);
+
+    if (driverProfile?.isAvailable || activeDriverRide) {
+      throw new AppError('Go offline and finish your active driver ride before booking a rider ride.', 409);
+    }
+
     const route = await routingService.getRouteDetails(pick_up_lat, pick_up_lng, drop_off_lat, drop_off_lng);
     const {estimates}  = await routingService.calculateFare(route.distance, route.duration);
     const estimatedFare = estimates[requested_vehicle_type];
@@ -130,7 +148,7 @@ class RideService{
 
       if(!driverId)continue;
       
-      if (type === requested_vehicle_type) {
+      if (type === requested_vehicle_type && await this.isDriverEligibleForRide(driverId, requested_vehicle_type as VehicleType)) {
         io.to(driverId).emit('ride:new-request', {
           rideId: newRide.id,
           pickup: { lat: pick_up_lat, lng: pick_up_lng, address: pick_up_address },
@@ -173,7 +191,45 @@ class RideService{
       throw new AppError('An active verified vehicle is required to accept rides.', 403);
     }
 
+    const activeRide = await tx.ride.findFirst({
+      where: {
+        driverId,
+        status: { in: ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'] }
+      },
+      select: { id: true }
+    });
+
+    if (activeRide) {
+      throw new AppError('Finish your active ride before accepting another request.', 409);
+    }
+
     return vehicle;
+  }
+
+  private async isDriverEligibleForRide(driverId: string, vehicleType: VehicleType) {
+    const driverProfile = await prisma.driverProfile.findUnique({
+      where: { userId: driverId },
+      include: { activeVehicle: true }
+    });
+
+    if (!driverProfile || driverProfile.deletedAt || !driverProfile.isAvailable || driverProfile.kycStatus !== 'APPROVED' || !driverProfile.licenseVerified) {
+      return false;
+    }
+
+    const vehicle = driverProfile.activeVehicle;
+    if (!vehicle || vehicle.vehicleType !== vehicleType || vehicle.status !== 'ACTIVE' || vehicle.deletedAt || !vehicle.isVerified) {
+      return false;
+    }
+
+    const activeRide = await prisma.ride.findFirst({
+      where: {
+        driverId,
+        status: { in: ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'] }
+      },
+      select: { id: true }
+    });
+
+    return !activeRide;
   }
 
   private async assignSearchingRide(
@@ -297,6 +353,24 @@ class RideService{
         finalFare: ride.estimatedFare
       });
     });
+  }
+
+  async cancelDriverRide(driverId: string, rideId: string) {
+    const result = await prisma.ride.updateMany({
+      where: {
+        id: rideId,
+        driverId,
+        status: { in: ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'] }
+      },
+      data: {
+        status: 'CANCELLED',
+        cancelledAt: new Date()
+      }
+    });
+
+    if (result.count === 0) {
+      throw new AppError('Ride cannot be cancelled.', 409);
+    }
   }
 
   async validateRideParticipant(userId: string, rideId: string) {

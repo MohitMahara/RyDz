@@ -23,7 +23,10 @@ class UserService {
     public async completeProfile(userId: string, profileData: userDTO.CompleteProfileDTO) {
         const user = await prisma.user.update({
             where: { id: userId },
-            data: profileData
+            data: {
+                ...(profileData.name !== undefined ? { name: profileData.name } : {}),
+                ...(profileData.email !== undefined ? { email: profileData.email } : {})
+            }
         });
 
         return {

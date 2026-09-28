@@ -3,6 +3,7 @@ import type {
   AuthResult,
   BackendVehicleType,
   DriverProfile,
+  DriverRideSummary,
   DriverVehicle,
   PaymentMethod,
   RideLocation,
@@ -81,6 +82,11 @@ export async function completeUserProfile(name: string, email: string) {
   }
 
   return data.data?.user
+}
+
+export async function updateUserName(name: string) {
+  const { data } = await api.patch<ApiEnvelope<{ user: User }>>("/users/profile", { name })
+  return data.data?.user ?? null
 }
 
 export async function getUserProfile() {
@@ -163,12 +169,12 @@ export async function createDriverProfile(licenseNumber: string, licenseExpiryDa
   if (licenseExpiryDate) payload.licenseExpiryDate = licenseExpiryDate
 
   const { data } = await api.post<ApiEnvelope<{ driverProfile: DriverProfile }>>("/drivers/profile", payload)
-  return data.data?.driverProfile
+  return { driverProfile: data.data?.driverProfile ?? null, token: data.token }
 }
 
 export async function initiateDriverKyc() {
   const { data } = await api.post<ApiEnvelope<{ driverProfile: DriverProfile }>>("/drivers/kyc/initiate")
-  return data.data?.driverProfile
+  return { driverProfile: data.data?.driverProfile ?? null, token: data.token }
 }
 
 export async function addDriverVehicle(vehicle: {
@@ -199,12 +205,27 @@ export async function setActiveDriverVehicle(vehicleId: string) {
   return data.data?.driverProfile
 }
 
+export async function deleteDriverVehicle(vehicleId: string) {
+  const { data } = await api.delete<ApiEnvelope<{ driverProfile: DriverProfile }>>(`/drivers/vehicles/${vehicleId}`)
+  return data.data?.driverProfile ?? null
+}
+
 export async function setDriverAvailability(isAvailable: boolean) {
   const { data } = await api.patch<ApiEnvelope<{ driverProfile: DriverProfile }>>("/drivers/availability", {
     isAvailable,
   })
 
   return data.data?.driverProfile
+}
+
+export async function getDriverRides() {
+  const { data } = await api.get<ApiEnvelope<DriverRideSummary>>("/drivers/rides")
+
+  if (!data.data) {
+    throw new Error("Driver ride data was missing")
+  }
+
+  return data.data
 }
 
 // RIDE HISTORY HELPERS (Local storage + API fallback)

@@ -51,6 +51,28 @@ export interface DriverProfile {
   vehicles?: DriverVehicle[]
 }
 
+export interface DriverRide {
+  id: string
+  pickupAddress: string
+  dropoffAddress: string
+  distanceInKm: number
+  estimatedFare: number
+  finalFare: number | null
+  status: "ACCEPTED" | "ARRIVED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+  requestedAt: string
+  rider: { name: string | null }
+  vehicle: { vehicleType: BackendVehicleType } | null
+}
+
+export interface DriverRideSummary {
+  activeRide: DriverRide | null
+  history: DriverRide[]
+  stats: {
+    completedRideCount: number
+    earnings: number
+  }
+}
+
 export interface RideLocation {
   address: string
   lat: number

@@ -28,7 +28,6 @@ export default function Navbar() {
           <span className="text-foreground">Dz</span>
         </Link>
 
-        {/* Desktop Navigation Links (Exactly 4 items at all times) */}
         <nav className="flex items-center gap-1 lg:gap-2">
           {/* 1. Home */}
           <NavLink
@@ -76,7 +75,6 @@ export default function Navbar() {
             Driver Profile
           </NavLink>
 
-          {/* 4. Conditional Item: Profile if Logged In, Sign In if Not Logged In */}
           {isLoggedIn ? (
             <NavLink
               to="/profile"
@@ -108,13 +106,12 @@ export default function Navbar() {
           )}
         </nav>
 
-        {/* Right Action / Theme Switcher */}
         <div className="flex items-center gap-3">
           <ModeToggle />
         </div>
       </header>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR: Bottom navigation feature on phones (< md, Exactly 4 items) */}
+      {/* MOBILE BOTTOM NAVBAR: Only visible on smaller screens (< md) */}
       <nav className="flex md:hidden fixed bottom-0 left-0 right-0 z-[999] items-center justify-around bg-background/95 backdrop-blur-xl border-t border-border px-2 py-2 shadow-[0_-4px_25px_rgba(0,0,0,0.15)]">
         {/* 1. Home */}
         <NavLink
@@ -162,7 +159,6 @@ export default function Navbar() {
           <span className="text-[10px] mt-0.5 font-medium">Driver</span>
         </NavLink>
 
-        {/* 4. Conditional: Profile or Sign In */}
         {isLoggedIn ? (
           <NavLink
             to="/profile"

@@ -14,6 +14,7 @@ export interface ClientToServerEvents {
     'ride:arrive': (data: { rideId: string }, callback: (result: { success: boolean; message: string }) => void) => void;
     'ride:start': (data: { rideId: string; otp: string }, callback: (result: { success: boolean; message: string }) => void) => void;
     'ride:complete': (data: { rideId: string }, callback: (result: { success: boolean; message: string }) => void) => void;
+    'ride:cancel': (data: { rideId: string }, callback: (result: { success: boolean; message: string }) => void) => void;
     'ride:join': (data: { rideId: string }, callback: (result: { success: boolean; message: string }) => void) => void;
 }
 
@@ -54,7 +55,7 @@ const removeDriverLocation = async (socket: RideSocket) => {
 const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : 'Unable to update the ride.';
 
-const emitRideStatus = (rideId: string, status: 'ARRIVED' | 'IN_PROGRESS' | 'COMPLETED') => {
+const emitRideStatus = (rideId: string, status: 'ARRIVED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED') => {
     getIO().to(rideRoom(rideId)).emit('ride:status-changed', { rideId, status });
 };
 
@@ -156,6 +157,17 @@ export const registerRideSocketHandlers = (socket: RideSocket) => {
             socket.join(rideRoom(rideId));
             emitRideStatus(rideId, 'COMPLETED');
             callback({ success: true, message: 'Ride completed successfully.' });
+        } catch (error) {
+            callback({ success: false, message: getErrorMessage(error) });
+        }
+    });
+
+    socket.on('ride:cancel', async ({ rideId }, callback) => {
+        try {
+            await rideService.cancelDriverRide(socket.data.userId, rideId);
+            socket.join(rideRoom(rideId));
+            emitRideStatus(rideId, 'CANCELLED');
+            callback({ success: true, message: 'Ride cancelled successfully.' });
         } catch (error) {
             callback({ success: false, message: getErrorMessage(error) });
         }

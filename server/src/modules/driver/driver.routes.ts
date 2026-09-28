@@ -8,6 +8,7 @@ import {
     driverKycStatus,
     getDriverAvailability,
     getDriverProfile,
+    getDriverRides,
     initiateDriverKyc,
     setActiveDriverVehicle,
     updateDriverAvailability,
@@ -22,10 +23,11 @@ const router = express.Router();
 router.use(authenticate);
 
 router.post("/profile", createDriverProfile);
+router.get("/profile", getDriverProfile);
 
 router.use(requireDriver);
 
-router.get("/profile",   getDriverProfile);
+router.get("/rides", getDriverRides);
 router.patch("/profile",  updateDriverProfile);
 router.delete("/profile", deleteDriverProfile);
 

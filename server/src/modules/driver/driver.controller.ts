@@ -45,6 +45,16 @@ export const getDriverProfile = catchAsync(async(req: Request, res: Response, ne
     });
 });
 
+export const getDriverRides = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.userId as string;
+    const rides = await driverService.getRides(userId);
+
+    res.status(200).json({
+        status: "success",
+        data: rides
+    });
+});
+
 export const deleteDriverProfile = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.userId as string;
     await driverService.deleteDriverProfile(userId);

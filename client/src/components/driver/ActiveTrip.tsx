@@ -7,19 +7,21 @@ import type { RideRequest } from "@/types"
 
 interface ActiveTripProps {
   request: RideRequest
+  status?: "ACCEPTED" | "ARRIVED" | "IN_PROGRESS"
   onComplete: () => void
+  onCancel: () => void
 }
 
 type TripStage = "accepted" | "arrived" | "started"
 type SocketAck = { success: boolean; message: string }
 
-export default function ActiveTrip({ request, onComplete }: ActiveTripProps) {
+export default function ActiveTrip({ request, status = "ACCEPTED", onComplete, onCancel }: ActiveTripProps) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [stage, setStage] = useState<TripStage>("accepted")
+  const [stage, setStage] = useState<TripStage>(status === "IN_PROGRESS" ? "started" : status === "ARRIVED" ? "arrived" : "accepted")
 
-  const runRideAction = (event: "ride:arrive" | "ride:start" | "ride:complete", payload: object) => {
+  const runRideAction = (event: "ride:arrive" | "ride:start" | "ride:complete" | "ride:cancel", payload: object) => {
     setLoading(true)
     setError(null)
 
@@ -33,6 +35,7 @@ export default function ActiveTrip({ request, onComplete }: ActiveTripProps) {
       if (event === "ride:arrive") setStage("arrived")
       if (event === "ride:start") setStage("started")
       if (event === "ride:complete") onComplete()
+      if (event === "ride:cancel") onCancel()
     })
   }
 
@@ -57,6 +60,7 @@ export default function ActiveTrip({ request, onComplete }: ActiveTripProps) {
   }
 
   const enteredOtp = otp.join("")
+  const cancelTrip = () => runRideAction("ride:cancel", { rideId: request.id })
 
   if (stage === "started") {
     return (
@@ -100,6 +104,7 @@ export default function ActiveTrip({ request, onComplete }: ActiveTripProps) {
         >
           {loading ? <Spinner className="size-4" /> : "Complete Trip"}
         </Button>
+        <Button variant="outline" className="w-full rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={cancelTrip} disabled={loading}>Cancel Trip</Button>
       </div>
     )
   }
@@ -175,23 +180,29 @@ export default function ActiveTrip({ request, onComplete }: ActiveTripProps) {
       )}
 
       {stage === "accepted" ? (
-        <Button
+        <div className="flex gap-2">
+          <Button
           size="lg"
           className="w-full h-12 rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
           disabled={loading}
           onClick={() => runRideAction("ride:arrive", { rideId: request.id })}
         >
           {loading ? <Spinner className="size-4" /> : "Mark Arrived"}
-        </Button>
+          </Button>
+          <Button variant="outline" className="h-12 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={cancelTrip} disabled={loading}>Cancel</Button>
+        </div>
       ) : (
-        <Button
+        <div className="flex gap-2">
+          <Button
           size="lg"
           className="w-full h-12 rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
           disabled={enteredOtp.length !== 6 || loading}
           onClick={() => runRideAction("ride:start", { rideId: request.id, otp: enteredOtp })}
         >
           {loading ? <Spinner className="size-4" /> : "Start Trip"}
-        </Button>
+          </Button>
+          <Button variant="outline" className="h-12 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={cancelTrip} disabled={loading}>Cancel</Button>
+        </div>
       )}
     </div>
   )
