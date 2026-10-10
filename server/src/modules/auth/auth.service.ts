@@ -1,6 +1,6 @@
 import prisma  from '../../config/db.js';
 import { AppError } from '../../shared/utils/AppError.util.js';
-import {generateToken, generateRefreshToken} from './utils/jwt.util.js';
+import {generateToken, generateRefreshToken, verifyRefreshToken} from './utils/jwt.util.js';
 import * as authDTO from './auth.dto.js';
 import { otpService } from '../../shared/services/otp.service.js';
 // import {hashPassword} from '../../shared/utils/hash.util.js';
@@ -63,6 +63,34 @@ class AuthService {
             isNewUser: !existingUser
         };
     }
+
+
+    public async refreshAccessToken(refreshToken: string) {
+        const decoded = verifyRefreshToken(refreshToken);
+
+        if (!decoded) {
+            throw new AppError('Invalid or expired refresh token', 401);
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.id },
+            include : {
+                driverProfile : true
+            }
+        });
+
+        if (!user) {
+            throw new AppError('User not found', 404);
+        }
+
+        const token = generateToken(user);
+
+        return {
+            user: this.sanitizeUser(user),
+            token
+        };
+    }
+
 
     
     // // Request an OTP for password reset

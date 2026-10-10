@@ -44,6 +44,30 @@ export const verifyPhoneOtpAndAuthenticate = catchAsync(async (req: Request, res
 });
 
 
+// Controller for refreshing the access token using the refresh token
+export const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const refreshAToken = req.cookies.refreshToken;
+
+    if (!refreshAToken) {
+        res.status(401).json({
+            status: 'fail',
+            message: 'Refresh token is missing. Please log in again.',
+        });
+        
+        return;
+    }
+
+    const { token, user } = await authService.refreshAccessToken(refreshAToken);
+
+    res.status(200).json({
+        status: 'success',
+        message : "Access token refreshed successfully",
+        token,
+        data: { user }
+    });
+});
+
+
 // Controller for requesting an OTP for password reset
 // export const requestPasswordOtp = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 //     const parsedData = requestPasswordOtpSchema.parse(req.body);

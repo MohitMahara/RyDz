@@ -44,3 +44,12 @@ export const generateRefreshToken = (userId: string): string => {
         }
     );
 };
+
+export const verifyRefreshToken = (refreshToken: string): JwtPayload | null => {
+     if(!refreshToken) {
+        return null;
+     }
+     const decoded = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as JwtPayload;
+     return decoded;
+
+}
