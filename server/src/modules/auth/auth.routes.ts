@@ -9,7 +9,7 @@ const router = express.Router();
 router.post("/phone/request-otp", otpRequestLimiter, verifyBot, authController.requestPhoneOtp);
 router.post("/phone/verify-otp", otpVerifyLimiter, authController.verifyPhoneOtpAndAuthenticate);
 
-router.post("/refresh", otpRequestLimiter, authController.refreshToken);
+router.post("/refresh", authController.refreshToken);
 
 // routes for setting and resetting password using phone number and otp. (forgot password)
 // router.post("/password/request-otp", otpRequestLimiter, verifyBot, authController.requestPasswordOtp);

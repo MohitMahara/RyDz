@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import {catchAsync}  from '../../shared/utils/catchAsync.util.js';
 import { authService } from './auth.service.js';
+import env from '../../config/env.js';
 import
     { 
     requestPhoneOtpSchema,
@@ -30,8 +31,8 @@ export const verifyPhoneOtpAndAuthenticate = catchAsync(async (req: Request, res
     // Attach the Refresh Token to an HttpOnly, Secure cookie
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: true,    
-        sameSite: 'strict',
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
     });
 
@@ -46,7 +47,7 @@ export const verifyPhoneOtpAndAuthenticate = catchAsync(async (req: Request, res
 
 // Controller for refreshing the access token using the refresh token
 export const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const refreshAToken = req.cookies.refreshToken;
+    const refreshAToken = req.cookies?.refreshToken;
 
     if (!refreshAToken) {
         res.status(401).json({

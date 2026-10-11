@@ -68,10 +68,6 @@ class AuthService {
     public async refreshAccessToken(refreshToken: string) {
         const decoded = verifyRefreshToken(refreshToken);
 
-        if (!decoded) {
-            throw new AppError('Invalid or expired refresh token', 401);
-        }
-
         const user = await prisma.user.findUnique({
             where: { id: decoded.id },
             include : {

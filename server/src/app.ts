@@ -7,6 +7,8 @@ import userRoutes from "./modules/user/user.routes.js";
 import driverRoutes from "./modules/driver/driver.routes.js";
 import rideRoutes from "./modules/ride/ride.routes.js";
 import rateLimit from 'express-rate-limit';
+import env from './config/env.js';
+import cookieParser from "cookie-parser";
 
 const apiLimiter = rateLimit({
     windowMs: 60 * 1000, 
@@ -18,9 +20,10 @@ const app = express();
 
 app.use(apiLimiter);
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(cors({
-  origin: 'http://localhost:5173', 
+  origin: env.CLIENT_URL, 
   credentials: true             
 }));
 

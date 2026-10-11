@@ -12,6 +12,7 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string(),
   NODE_ENV: z.enum(["development", "production"]).default("development"),
   OSRM_ROUTING_URL : z.url(),
+  CLIENT_URL : z.url()
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import env from '../../../config/env.js';
 import type { User, DriverProfile } from '../../../generated/client/client.js';
+import {AppError} from '../../../shared/utils/AppError.util.js';
 
 type JwtPayload = {
     id: string,
@@ -45,11 +46,11 @@ export const generateRefreshToken = (userId: string): string => {
     );
 };
 
-export const verifyRefreshToken = (refreshToken: string): JwtPayload | null => {
-     if(!refreshToken) {
-        return null;
-     }
+export const verifyRefreshToken = (refreshToken: string): {id : string} => {
+    try{
      const decoded = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as JwtPayload;
      return decoded;
-
+    }catch (error) {
+      throw new AppError('Invalid or expired refresh token', 401);
+    }
 }
