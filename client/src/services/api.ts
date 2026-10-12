@@ -56,6 +56,9 @@ api.interceptors.response.use(
 
 let refreshPromise: Promise<string> | null = null
 
+
+// Function to access jwt token from the local storage
+
 function getStoredAccessToken() {
   try {
     const data = localStorage.getItem("rydz-auth")
