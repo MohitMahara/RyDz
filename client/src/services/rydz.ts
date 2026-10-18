@@ -49,8 +49,11 @@ const vehicleLabels: Record<BackendVehicleType, VehicleOption["type"]> = {
 const formatMaybeNumber = (value: number | string, suffix: string) =>
   typeof value === "number" ? `${value} ${suffix}` : value
 
-export async function requestPhoneOtp(phoneNumber: string) {
-  await api.post("/auth/phone/request-otp", { phoneNumber })
+export async function requestPhoneOtp(phoneNumber: string, recaptchaToken?: string) {
+  await api.post("/auth/phone/request-otp", {
+    phoneNumber,
+    ...(recaptchaToken ? { recaptchaToken } : {}),
+  })
 }
 
 export async function verifyPhoneOtp(phoneNumber: string, otp: string): Promise<AuthResult> {

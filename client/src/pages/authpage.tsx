@@ -7,11 +7,13 @@ import { Spinner } from "@/components/ui/spinner"
 import { getApiErrorMessage } from "@/services/api"
 import { completeUserProfile, requestPhoneOtp, verifyPhoneOtp} from "@/services/rydz"
 import { UseAuth } from "@/contexts/authContext"
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
 
 export default function AuthPage() {
   const navigate = useNavigate()
   const { setUserInfo } = UseAuth()
+  const { executeRecaptcha } = useGoogleReCaptcha()
 
   const [mode, setMode] = useState<"login" | "signup">("login")
   const [step, setStep] = useState<"phone" | "otp">("phone")
@@ -36,7 +38,15 @@ export default function AuthPage() {
     setError(null)
 
     try {
-      await requestPhoneOtp(normalizedPhone)
+      let recaptchaToken: string | undefined
+
+      if (executeRecaptcha) {
+        recaptchaToken = await executeRecaptcha("request_phone_otp")
+      } else if (!import.meta.env.DEV) {
+        throw new Error("reCAPTCHA is not configured. Please try again later.")
+      }
+
+      await requestPhoneOtp(normalizedPhone, recaptchaToken)
       setStep("otp")
     } catch (error) {
       setError(getApiErrorMessage(error))
