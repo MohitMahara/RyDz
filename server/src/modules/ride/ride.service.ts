@@ -27,6 +27,7 @@ class RideService{
       'ASC'
      ) as unknown as [string, string][];
 
+
     const driverEtas: Record<string, number | null> = {
       BIKE: null,
       AUTO: null,
@@ -41,8 +42,8 @@ class RideService{
         CAB_PREMIUM : null
     };
 
-    const AVERAGE_SPEED_KM_PER_MIN = 0.4; 
-    const WINDING_FACTOR = 1.4;
+    const AVERAGE_SPEED_KM_PER_MIN = 0.4; // Average Vehicle speeed in Delhi
+    const WINDING_FACTOR = 1.4; // Factor to account for winding roads and traffic conditions
 
     for (const [memberString, distanceString] of nearbyDrivers) {
       const [_, vehicleType]  = memberString.split(':'); 
@@ -52,7 +53,7 @@ class RideService{
     
       if(driverDistanceMap[vehicleType] === null) {
         const actualDistanceKm = distanceKm * WINDING_FACTOR; 
-        driverDistanceMap[vehicleType] = Number((actualDistanceKm).toFixed(2));
+        driverDistanceMap[vehicleType] = Number(actualDistanceKm);
         driverEtas[vehicleType] = Math.max(Math.round(actualDistanceKm / AVERAGE_SPEED_KM_PER_MIN), 1);
       }
       
@@ -60,12 +61,16 @@ class RideService{
 
     const tripDetails = { distance: route.distance, time: route.duration };
     const encodedPolyline = route.geometry;
-    const vehicles =  Object.keys(fare.estimates).map(type => ({
-          type,
-          fare: fare.estimates[type],
-          distance: driverDistanceMap[type] || 'No drivers nearby',
-          eta: driverEtas[type] || 'No drivers nearby'
-    }));
+    const vehicles = Object.entries(driverDistanceMap).flatMap(([type, distance]) => {
+      if (distance === null) return [];
+
+      return {
+        type,
+        fare: fare.estimates[type],
+        distance,
+        eta: driverEtas[type],
+      };
+    });
 
      return {
         tripDetails,

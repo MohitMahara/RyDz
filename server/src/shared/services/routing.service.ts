@@ -24,11 +24,11 @@ import env from "../../config/env.js"
     const routes = response.data.routes[0];
 
     // adjust distance and duration for traffic
-    const distanceKm = Number((routes.distance/1000).toFixed(1));
+    const distanceKm = Number(routes.distance/1000);
     let durationMin = Math.round((routes.duration) / 60);
      
 
-    // Force Indian standar time for accurate peak hour calculation
+    // Force Indian standard time for accurate peak hour calculation
     const istHourString = new Date().toLocaleString("en-US", { 
       timeZone: "Asia/Kolkata", 
       hour: 'numeric', 
