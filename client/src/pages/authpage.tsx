@@ -42,7 +42,7 @@ export default function AuthPage() {
 
       if (executeRecaptcha) {
         recaptchaToken = await executeRecaptcha("request_phone_otp")
-      } else if (!import.meta.env.DEV) {
+      } else if (import.meta.env.VITE_CLIENT_ENV !== "development") {
         throw new Error("reCAPTCHA is not configured. Please try again later.")
       }
 
