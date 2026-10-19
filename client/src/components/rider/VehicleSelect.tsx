@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Bike, Car, ChevronRight, Clock, IndianRupee, MapPin, Zap } from "lucide-react"
+import { Bike, Car, ChevronRight, Clock, MapPin, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -126,8 +126,7 @@ export default function VehicleSelect({ pickup, dropoff, onConfirm, onBack }: Ve
               </div>
               <div className="text-right">
                 <div className="flex items-center justify-end font-bold text-base">
-                  <IndianRupee className="size-4" />
-                  <span>{v.fare}</span>
+                  ₹<span>{v.fare}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Cash</p>
               </div>
@@ -161,7 +160,7 @@ export default function VehicleSelect({ pickup, dropoff, onConfirm, onBack }: Ve
       >
         {selectedVehicle ? (
           <>
-            Confirm {selectedVehicle.type} <IndianRupee className="size-4 mx-1" /> {selectedVehicle.fare}
+            Confirm {selectedVehicle.type} ₹{selectedVehicle.fare}
           </>
         ) : (
           "Select a ride"
