@@ -33,6 +33,47 @@ class UserService {
             user
         };
     }
+
+
+    public async userRides(userId: string) {
+ 
+    const rides = await prisma.ride.findMany({
+        where: { riderId: userId },
+        orderBy: { requestedAt: "desc" },
+        select: {
+          id: true,
+          pickupAddress: true,
+          dropoffAddress: true,
+          requestedVehicleType: true,
+          status: true,
+          estimatedFare: true,
+          finalFare: true,
+          distanceInKm: true,
+          requestedAt: true,
+          completedAt: true,
+          cancelledAt: true,
+        
+          driver: {
+            select: {
+              name: true,
+              avatarUrl: true,
+            },
+          },
+      
+          vehicle: {
+            select: {
+              vehicleType: true,
+              make: true,
+              model: true,
+              color: true,
+              plateNumber: true,
+            },
+          },
+        },
+        });
+
+        return {rides};
+    }
 }
 
 export const userService = new UserService();

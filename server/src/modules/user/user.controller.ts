@@ -26,3 +26,15 @@ export const completeProfile = catchAsync(async (req: Request, res: Response, ne
         data: { user }
     });
 });
+
+
+export const getUserRides = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.userId as string;
+    const { rides } = await userService.userRides(userId);
+
+    res.status(200).json({
+        status: 'success',
+        message : "User rides are fetched successfully",
+        data: { rides }
+    });
+});

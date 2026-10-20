@@ -108,3 +108,25 @@ export interface ActiveRide {
   phoneNumber?: string
   riderName?: string
 }
+
+
+type Driver = {
+  name: string
+  avatarUrl?: string | null
+}
+
+export interface Ride{
+  id: string
+  pickupAddress: string
+  dropoffAddress: string
+  requestedVehicleType: string
+  status: string
+  estimatedFare: number
+  finalFare: number | null
+  distanceInKm:  number
+  requestedAt:   string | null
+  completedAt: string | null
+  cancelledAt: string | null
+  vehicle: string  | null
+  driver : Driver | null
+}

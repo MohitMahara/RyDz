@@ -9,6 +9,7 @@ import type {
   RideLocation,
   User,
   VehicleOption,
+  Ride,
 } from "@/types"
 
 type ApiEnvelope<T> = {
@@ -26,18 +27,6 @@ type EstimateVehicle = {
   eta: number | string
 }
 
-export interface RideHistoryItem {
-  id: string
-  date: string
-  pickup: string
-  dropoff: string
-  fare: number
-  vehicleType: string
-  status: "COMPLETED" | "CANCELLED"
-  role: "rider" | "driver"
-  driverName?: string
-  riderName?: string
-}
 
 const vehicleLabels: Record<BackendVehicleType, VehicleOption["type"]> = {
   BIKE: "Bike",
@@ -231,107 +220,12 @@ export async function getDriverRides() {
   return data.data
 }
 
-// RIDE HISTORY HELPERS (Local storage + API fallback)
 
-const INITIAL_RIDER_HISTORY: RideHistoryItem[] = [
-  {
-    id: "ride-101",
-    date: "Sep 26, 2026 • 02:45 PM",
-    pickup: "Connaught Place, New Delhi",
-    dropoff: "Cyber Hub, Gurugram",
-    fare: 340,
-    vehicleType: "Economy Cab",
-    status: "COMPLETED",
-    role: "rider",
-    driverName: "Vikram Singh",
-  },
-  {
-    id: "ride-102",
-    date: "Sep 24, 2026 • 11:15 AM",
-    pickup: "Hauz Khas Village, Delhi",
-    dropoff: "Saket Select Citywalk",
-    fare: 120,
-    vehicleType: "Auto",
-    status: "COMPLETED",
-    role: "rider",
-    driverName: "Rajesh Kumar",
-  },
-  {
-    id: "ride-103",
-    date: "Sep 20, 2026 • 09:30 PM",
-    pickup: "IGI Airport Terminal 3",
-    dropoff: "Vasant Kunj Sector B",
-    fare: 450,
-    vehicleType: "Premium Cab",
-    status: "CANCELLED",
-    role: "rider",
-  },
-]
+export async function getRiderHistory() : Promise<Ride[]> {
 
-const INITIAL_DRIVER_HISTORY: RideHistoryItem[] = [
-  {
-    id: "d-ride-201",
-    date: "Sep 26, 2026 • 05:20 PM",
-    pickup: "Nehru Place Metro Station",
-    dropoff: "Noida Sector 62",
-    fare: 280,
-    vehicleType: "Economy Cab",
-    status: "COMPLETED",
-    role: "driver",
-    riderName: "Priya Sharma",
-  },
-  {
-    id: "d-ride-202",
-    date: "Sep 25, 2026 • 08:10 AM",
-    pickup: "Karol Bagh Market",
-    dropoff: "Chandni Chowk",
-    fare: 95,
-    vehicleType: "Auto",
-    status: "COMPLETED",
-    role: "driver",
-    riderName: "Amit Verma",
-  },
-  {
-    id: "d-ride-203",
-    date: "Sep 23, 2026 • 06:40 PM",
-    pickup: "Lajpat Nagar Central Market",
-    dropoff: "Greater Kailash 1",
-    fare: 150,
-    vehicleType: "Economy Cab",
-    status: "CANCELLED",
-    role: "driver",
-  },
-]
+  const {data } = await api.get("/users/rides");
 
-export function getRiderHistory(): RideHistoryItem[] {
-  const stored = localStorage.getItem("rydz_rider_history")
-  if (stored) {
-    try {
-      return JSON.parse(stored)
-    } catch {
-      // ignore
-    }
-  }
-  localStorage.setItem("rydz_rider_history", JSON.stringify(INITIAL_RIDER_HISTORY))
-  return INITIAL_RIDER_HISTORY
-}
+  const rides = data.data.rides;
 
-export function getDriverHistory(): RideHistoryItem[] {
-  const stored = localStorage.getItem("rydz_driver_history")
-  if (stored) {
-    try {
-      return JSON.parse(stored)
-    } catch {
-      // ignore
-    }
-  }
-  localStorage.setItem("rydz_driver_history", JSON.stringify(INITIAL_DRIVER_HISTORY))
-  return INITIAL_DRIVER_HISTORY
-}
-
-export function addRideToHistory(ride: RideHistoryItem) {
-  const historyKey = ride.role === "rider" ? "rydz_rider_history" : "rydz_driver_history"
-  const current = ride.role === "rider" ? getRiderHistory() : getDriverHistory()
-  const updated = [ride, ...current]
-  localStorage.setItem(historyKey, JSON.stringify(updated))
+  return rides;
 }

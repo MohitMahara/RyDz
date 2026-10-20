@@ -3,17 +3,29 @@ import { useNavigate } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { getRiderHistory, type RideHistoryItem } from "@/services/rydz"
+import { getRiderHistory} from "@/services/rydz"
+import type {Ride} from "@/types"
 import { ArrowLeft, Clock, MapPin, CheckCircle2, XCircle, History } from "lucide-react"
 
 export default function BookingsPage() {
   const navigate = useNavigate()
-  const [riderRides, setRiderRides] = useState<RideHistoryItem[]>([])
+  const [riderRides, setRiderRides] = useState<Ride[]>([])
   const [filter, setFilter] = useState<"ALL" | "COMPLETED" | "CANCELLED">("ALL")
 
   useEffect(() => {
-    setRiderRides(getRiderHistory())
+
+    const fetchRides = async () => {
+      try {
+        const rides = await getRiderHistory()
+        setRiderRides(rides)
+      } catch (error) {
+        console.error("Error fetching rider history:", error)
+      }
+    }
+
+    fetchRides()
   }, [])
+
 
   const filteredRides = riderRides.filter((r) => {
     if (filter === "COMPLETED") return r.status === "COMPLETED"
@@ -94,7 +106,7 @@ export default function BookingsPage() {
                   {/* Top Status & Date */}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
-                      <Clock className="size-3.5" /> {ride.date}
+                      <Clock className="size-3.5" /> {ride.requestedAt ? new Date(ride.requestedAt).toLocaleString() : "N/A"}
                     </span>
                     {ride.status === "COMPLETED" ? (
                       <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-semibold gap-1 px-2.5 py-0.5">
@@ -113,7 +125,7 @@ export default function BookingsPage() {
                       <div className="size-2.5 rounded-full bg-primary shrink-0" />
                       <div className="min-w-0 flex-1">
                         <p className="text-[11px] text-muted-foreground">Pickup</p>
-                        <p className="font-semibold text-foreground truncate">{ride.pickup}</p>
+                        <p className="font-semibold text-foreground truncate">{ride.pickupAddress}</p>
                       </div>
                     </div>
                     <div className="ml-1 w-px h-3 bg-border" />
@@ -121,7 +133,7 @@ export default function BookingsPage() {
                       <MapPin className="size-4 text-destructive shrink-0" />
                       <div className="min-w-0 flex-1">
                         <p className="text-[11px] text-muted-foreground">Destination</p>
-                        <p className="font-semibold text-foreground truncate">{ride.dropoff}</p>
+                        <p className="font-semibold text-foreground truncate">{ride.dropoffAddress}</p>
                       </div>
                     </div>
                   </div>
@@ -129,10 +141,10 @@ export default function BookingsPage() {
                   {/* Footer details */}
                   <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground">
                     <div>
-                      <span>Vehicle: <strong className="text-foreground">{ride.vehicleType}</strong></span>
-                      {ride.driverName && <span className="ml-3">Driver: <strong className="text-foreground">{ride.driverName}</strong></span>}
+                      <span>Vehicle: <strong className="text-foreground">{ride.requestedVehicleType}</strong></span>
+                      {ride.driver && <span className="ml-3">Driver: <strong className="text-foreground">{ride.driver.name}</strong></span>}
                     </div>
-                    <span className="text-base font-extrabold text-foreground">₹{ride.fare}</span>
+                    <span className="text-base font-extrabold text-foreground">₹{ride.estimatedFare}</span>
                   </div>
                 </CardContent>
               </Card>
