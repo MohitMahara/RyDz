@@ -6,3 +6,12 @@ export const completeProfileSchema = z.object({
 }).refine((data) => data.name !== undefined || data.email !== undefined, {
     message: 'Provide at least one profile field'
 });
+
+
+export const userRidesQuerySchema = z.object({
+  status: z.enum(["ALL", "COMPLETED", "CANCELLED"]).default("ALL"),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  page: z.coerce.number().int().min(1).default(1),
+  sortBy: z.enum(["requestedAt"]).default("requestedAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});

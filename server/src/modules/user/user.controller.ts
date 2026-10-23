@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import {catchAsync}  from '../../shared/utils/catchAsync.util.js';
 import { userService } from './user.service.js';
-import { completeProfileSchema} from './user.schema.js';
+import { completeProfileSchema, userRidesQuerySchema} from './user.schema.js';
 
 export const getUserProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.userId as string;
@@ -30,11 +30,15 @@ export const completeProfile = catchAsync(async (req: Request, res: Response, ne
 
 export const getUserRides = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.userId as string;
-    const { rides } = await userService.userRides(userId);
+    const reqParams = userRidesQuerySchema.parse(req.query);
+    const { rides, metadata } = await userService.userRides(userId, reqParams);
 
     res.status(200).json({
         status: 'success',
         message : "User rides are fetched successfully",
-        data: { rides }
+        data: { 
+            rides,
+            metadata,
+         }
     });
 });
