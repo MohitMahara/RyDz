@@ -9,7 +9,7 @@ export const completeProfileSchema = z.object({
 
 
 export const userRidesQuerySchema = z.object({
-  status: z.enum(["ALL", "COMPLETED", "CANCELLED"]).default("ALL"),
+  status: z.string().transform((status => status.toUpperCase())).pipe(z.enum(["ALL", "COMPLETED", "CANCELLED"])).default("ALL"),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   page: z.coerce.number().int().min(1).default(1),
   sortBy: z.enum(["requestedAt"]).default("requestedAt"),

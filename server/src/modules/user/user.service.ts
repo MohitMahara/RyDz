@@ -1,6 +1,6 @@
 import prisma from "../../config/db.js";
 import * as userDTO from "./user.dto.js";
-import type { RideStatus } from "../../generated/client/enums.js";
+import { RideStatus } from "../../generated/client/enums.js";
 
 class UserService {
   // Sanitize user object by removing sensitive information like password
