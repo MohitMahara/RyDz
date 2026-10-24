@@ -130,3 +130,12 @@ export interface Ride{
   vehicle: string  | null
   driver : Driver | null
 }
+
+
+export interface getRideHistoryParams{
+  status: "ALL" | "COMPLETED" | "CANCELLED" | "all" | "completed" | "cancelled"
+  limit: number | undefined
+  page: number | undefined
+  sortBy: string
+  sortOrder: string
+}

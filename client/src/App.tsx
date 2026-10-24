@@ -5,7 +5,7 @@ import RidesPage from "@/pages/ridespage.tsx"
 import DriverPage from "@/pages/driverpage.tsx"
 import AuthPage from "@/pages/authpage.tsx"
 import ProfilePage from "@/pages/profilepage.tsx"
-import BookingsPage from "@/pages/bookingspage.tsx"
+import RideHistory from "@/pages/rideHistory"
 
 export function App() {
   return (
@@ -17,7 +17,7 @@ export function App() {
           <Route path="driver" element={<DriverPage />} />
           <Route path="auth" element={<AuthPage />} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="bookings" element={<BookingsPage />} />
+          <Route path="bookings" element={<RideHistory />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

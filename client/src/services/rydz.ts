@@ -10,6 +10,7 @@ import type {
   User,
   VehicleOption,
   Ride,
+  getRideHistoryParams,
 } from "@/types"
 
 type ApiEnvelope<T> = {
@@ -221,9 +222,18 @@ export async function getDriverRides() {
 }
 
 
-export async function getRiderHistory() : Promise<Ride[]> {
+export async function getRiderHistory({status, page, limit, sortBy, sortOrder} : getRideHistoryParams) : Promise<Ride[]> {
 
-  const {data } = await api.get("/users/rides");
+  const {data } = await api.get("/users/rides", {
+    params: {
+      status,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    }
+    }
+  );
 
   const rides = data.data.rides;
 

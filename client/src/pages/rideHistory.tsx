@@ -7,16 +7,23 @@ import { getRiderHistory} from "@/services/rydz"
 import type {Ride} from "@/types"
 import { ArrowLeft, Clock, MapPin, CheckCircle2, XCircle, History } from "lucide-react"
 
-export default function BookingsPage() {
+export default function RideHistory() {
   const navigate = useNavigate()
   const [riderRides, setRiderRides] = useState<Ride[]>([])
-  const [filter, setFilter] = useState<"ALL" | "COMPLETED" | "CANCELLED">("ALL")
+  const [filter, setFilter] = useState<"all" | "completed" | "cancelled">("all")
 
   useEffect(() => {
 
     const fetchRides = async () => {
       try {
-        const rides = await getRiderHistory()
+        const riderHistoryParams = {
+          status: filter,
+          limit: 20,
+          page: 1,
+          sortBy: "requestedAt",
+          sortOrder: "desc",
+        }
+        const rides = await getRiderHistory(riderHistoryParams)
         setRiderRides(rides)
       } catch (error) {
         console.error("Error fetching rider history:", error)
@@ -24,14 +31,8 @@ export default function BookingsPage() {
     }
 
     fetchRides()
-  }, [])
+  }, [filter])
 
-
-  const filteredRides = riderRides.filter((r) => {
-    if (filter === "COMPLETED") return r.status === "COMPLETED"
-    if (filter === "CANCELLED") return r.status === "CANCELLED"
-    return true
-  })
 
   return (
     <div className="min-h-dvh w-full bg-background text-foreground py-8 px-4 sm:px-6 lg:px-8 overflow-y-auto pb-24 md:pb-12">
@@ -49,37 +50,32 @@ export default function BookingsPage() {
             </Button>
             <div>
               <h1 className="text-2xl font-extrabold tracking-tight">My Bookings</h1>
-              <p className="text-xs text-muted-foreground">View all your past and cancelled rides</p>
             </div>
           </div>
-          <Badge variant="outline" className="gap-1 px-3 py-1 text-xs font-semibold rounded-full border-primary/30 text-primary bg-primary/5">
-            <History className="size-3.5 text-primary" />
-            Rider History
-          </Badge>
         </div>
 
         {/* Filter Tabs */}
         <div className="flex gap-1 border bg-muted/60 p-1.5 rounded-2xl text-xs font-semibold w-full sm:w-auto">
           <button
-            onClick={() => setFilter("ALL")}
+            onClick={() => setFilter("all")}
             className={`flex-1 sm:flex-none px-4 py-2 rounded-xl transition-all ${
-              filter === "ALL" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              filter === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             All Rides ({riderRides.length})
           </button>
           <button
-            onClick={() => setFilter("COMPLETED")}
+            onClick={() => setFilter("completed")}
             className={`flex-1 sm:flex-none px-4 py-2 rounded-xl transition-all ${
-              filter === "COMPLETED" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              filter === "completed" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Completed
           </button>
           <button
-            onClick={() => setFilter("CANCELLED")}
+            onClick={() => setFilter("cancelled")}
             className={`flex-1 sm:flex-none px-4 py-2 rounded-xl transition-all ${
-              filter === "CANCELLED" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              filter === "cancelled" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Cancelled
@@ -88,19 +84,16 @@ export default function BookingsPage() {
 
         {/* Rides List */}
         <div className="space-y-4">
-          {filteredRides.length === 0 ? (
+          {riderRides.length === 0 ? (
             <Card className="border border-dashed border-border p-8 text-center rounded-3xl bg-card space-y-2">
               <div className="size-12 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
                 <History className="size-6" />
               </div>
               <p className="font-semibold text-sm text-foreground">No bookings found</p>
               <p className="text-xs text-muted-foreground">You haven't booked any rides matching this filter yet.</p>
-              <Button size="sm" className="rounded-xl mt-2 font-semibold" onClick={() => navigate("/rides")}>
-                Book a Ride
-              </Button>
             </Card>
           ) : (
-            filteredRides.map((ride) => (
+            riderRides.map((ride) => (
               <Card key={ride.id} className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card transition-all hover:shadow-md">
                 <CardContent className="p-5 space-y-4">
                   {/* Top Status & Date */}
