@@ -7,11 +7,12 @@ import type { RideRequest } from "@/types"
 
 interface DriverFeedProps {
   requests: RideRequest[]
+  loading?: boolean
   onAccept: (request: RideRequest) => void
   onReject: (request: RideRequest) => void
 }
 
-export default function DriverFeed({ requests, onAccept, onReject }: DriverFeedProps) {
+export default function DriverFeed({ requests, loading = false, onAccept, onReject }: DriverFeedProps) {
   const [rejecting, setRejecting] = useState<string | null>(null)
 
   const handleReject = (request: RideRequest) => {
@@ -106,6 +107,7 @@ export default function DriverFeed({ requests, onAccept, onReject }: DriverFeedP
                   size="sm"
                   className="flex-1 rounded-lg h-9 text-muted-foreground border-border hover:border-destructive/50 hover:text-destructive hover:bg-destructive/5"
                   onClick={() => handleReject(req)}
+                  disabled={loading}
                 >
                   <X className="size-4 mr-1" />
                   Reject
@@ -114,6 +116,7 @@ export default function DriverFeed({ requests, onAccept, onReject }: DriverFeedP
                   size="sm"
                   className="flex-1 rounded-lg h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
                   onClick={() => onAccept(req)}
+                  disabled={loading}
                 >
                   <CheckCircle className="size-4 mr-1" />
                   Accept

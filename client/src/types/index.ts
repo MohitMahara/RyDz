@@ -139,3 +139,20 @@ export interface getRideHistoryParams{
   sortBy: string
   sortOrder: string
 }
+
+type address = {
+  address: string
+}
+
+type tripDetails = {
+  distanceInKm: number
+  fare: number
+}
+
+export interface RideReqPayload{
+   rideId: string;
+   pickup: address;
+   dropoff: address;
+   tripDetails: tripDetails;
+   riderDistanceInKm: number
+}

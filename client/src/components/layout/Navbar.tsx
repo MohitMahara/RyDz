@@ -60,7 +60,7 @@ export default function Navbar() {
             Rides
           </NavLink>
 
-          {/* 3. Driver Profile */}
+          {/* 3. Driver workspace */}
           <NavLink
             to="/driver"
             className={({ isActive }) =>
@@ -72,7 +72,7 @@ export default function Navbar() {
             }
           >
             <Car className="size-4" />
-            Driver Profile
+            Drive
           </NavLink>
 
           {isLoggedIn ? (

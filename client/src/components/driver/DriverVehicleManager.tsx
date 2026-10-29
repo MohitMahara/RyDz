@@ -32,7 +32,7 @@ export default function DriverVehicleManager({
 }: {
   profile: DriverProfile
   loading: boolean
-  onAdd: (vehicle: VehicleForm) => Promise<void>
+  onAdd: (vehicle: VehicleForm) => Promise<boolean>
   onVerify: (vehicleId: string) => Promise<void>
   onSetActive: (vehicleId: string) => Promise<void>
   onDelete: (vehicleId: string) => Promise<void>
@@ -41,7 +41,8 @@ export default function DriverVehicleManager({
   const [vehicle, setVehicle] = useState<VehicleForm>(emptyVehicle)
 
   const addVehicle = async () => {
-    await onAdd({ ...vehicle, plateNumber: vehicle.plateNumber.toUpperCase() })
+    const added = await onAdd({ ...vehicle, plateNumber: vehicle.plateNumber.toUpperCase() })
+    if (!added) return
     setVehicle(emptyVehicle)
     setAdding(false)
   }

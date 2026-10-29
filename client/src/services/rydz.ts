@@ -170,6 +170,22 @@ export async function initiateDriverKyc() {
   return { driverProfile: data.data?.driverProfile ?? null, token: data.token }
 }
 
+export async function updateDriverProfile(details: {
+  licenseNumber?: string
+  licenseExpiryDate?: string
+}) {
+  const { data } = await api.patch<ApiEnvelope<{ driverProfile: DriverProfile }>>("/drivers/profile", details)
+  return data.data?.driverProfile ?? null
+}
+
+export async function verifyDriverLicense() {
+  const { data } = await api.post<
+    ApiEnvelope<{ verificationStatus: DriverProfile["kycStatus"]; driverProfile: DriverProfile }>
+  >("/drivers/license/verify")
+
+  return data.data
+}
+
 export async function addDriverVehicle(vehicle: {
   vehicleType: BackendVehicleType
   make: string

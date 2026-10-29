@@ -209,7 +209,7 @@ export default function ProfilePage() {
 
                 {/* Driver Status */}
                 <div
-                  onClick={() => navigate("/driver")}
+                  onClick={() => navigate("/profile/driver")}
                   className="flex items-center justify-between p-4 sm:p-5 hover:bg-muted/40 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
